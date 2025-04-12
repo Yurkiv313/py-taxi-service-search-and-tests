@@ -127,7 +127,7 @@ class DriverListView(LoginRequiredMixin, generic.ListView):
         queryset = Driver.objects.all()
         self.form = BaseSearchForm(
             self.request.GET,
-            placeholder="Search by name"
+            placeholder="Search by username"
         )
         if self.form.is_valid():
             search_value = self.form.cleaned_data["search"]
