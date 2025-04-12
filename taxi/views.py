@@ -40,9 +40,13 @@ class ManufacturerListView(LoginRequiredMixin, generic.ListView):
     context_object_name = "manufacturer_list"
     template_name = "taxi/manufacturer_list.html"
     paginate_by = 2
+
     def get_queryset(self):
         queryset = Manufacturer.objects.all()
-        self.form = BaseSearchForm(self.request.GET, placeholder="Search by name")
+        self.form = BaseSearchForm(
+            self.request.GET,
+            placeholder="Search by name"
+        )
         if self.form.is_valid():
             search_value = self.form.cleaned_data["search"]
             if search_value:
@@ -78,7 +82,10 @@ class CarListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         queryset = Car.objects.select_related("manufacturer")
-        self.form = BaseSearchForm(self.request.GET, placeholder="Search by model")
+        self.form = BaseSearchForm(
+            self.request.GET,
+            placeholder="Search by model"
+        )
         if self.form.is_valid():
             search_value = self.form.cleaned_data["search"]
             if search_value:
@@ -118,7 +125,10 @@ class DriverListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         queryset = Driver.objects.all()
-        self.form = BaseSearchForm(self.request.GET, placeholder="Search by name")
+        self.form = BaseSearchForm(
+            self.request.GET,
+            placeholder="Search by name"
+        )
         if self.form.is_valid():
             search_value = self.form.cleaned_data["search"]
             if search_value:
