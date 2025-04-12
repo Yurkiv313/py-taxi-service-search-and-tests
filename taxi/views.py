@@ -42,19 +42,22 @@ class ManufacturerListView(LoginRequiredMixin, generic.ListView):
     paginate_by = 2
 
     def get_queryset(self):
-        queryset = Manufacturer.objects.all()
         self.form = BaseSearchForm(
             self.request.GET,
             placeholder="Search by name"
         )
+        queryset = Manufacturer.objects.all().order_by("name")
         if self.form.is_valid():
-            search_value = self.form.cleaned_data["search"]
+            search_value = (
+                self.request.GET.get("name")
+                or self.form.cleaned_data["search"]
+            )
             if search_value:
                 queryset = queryset.filter(name__icontains=search_value)
         return queryset
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(ManufacturerListView, self).get_context_data(**kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context["search_form"] = self.form
         return context
 
@@ -81,19 +84,22 @@ class CarListView(LoginRequiredMixin, generic.ListView):
     paginate_by = 5
 
     def get_queryset(self):
-        queryset = Car.objects.select_related("manufacturer")
         self.form = BaseSearchForm(
             self.request.GET,
             placeholder="Search by model"
         )
+        queryset = Car.objects.select_related("manufacturer").order_by("model")
         if self.form.is_valid():
-            search_value = self.form.cleaned_data["search"]
+            search_value = (
+                self.request.GET.get("model")
+                or self.form.cleaned_data["search"]
+            )
             if search_value:
                 queryset = queryset.filter(model__icontains=search_value)
         return queryset
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(CarListView, self).get_context_data(**kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context["search_form"] = self.form
         return context
 
@@ -124,19 +130,22 @@ class DriverListView(LoginRequiredMixin, generic.ListView):
     paginate_by = 5
 
     def get_queryset(self):
-        queryset = Driver.objects.all()
         self.form = BaseSearchForm(
             self.request.GET,
             placeholder="Search by username"
         )
+        queryset = Driver.objects.all().order_by("username")
         if self.form.is_valid():
-            search_value = self.form.cleaned_data["search"]
+            search_value = (
+                self.request.GET.get("username")
+                or self.form.cleaned_data["search"]
+            )
             if search_value:
                 queryset = queryset.filter(username__icontains=search_value)
         return queryset
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(DriverListView, self).get_context_data(**kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context["search_form"] = self.form
         return context
 
