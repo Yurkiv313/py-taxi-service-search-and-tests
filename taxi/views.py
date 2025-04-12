@@ -10,9 +10,7 @@ from taxi.forms import (
     DriverCreationForm,
     DriverLicenseUpdateForm,
     CarForm,
-    ManufacturerNameSearchForm,
-    CarModelSearchForm,
-    DriverUsernameSearchForm
+    BaseSearchForm,
 )
 
 
@@ -42,21 +40,19 @@ class ManufacturerListView(LoginRequiredMixin, generic.ListView):
     context_object_name = "manufacturer_list"
     template_name = "taxi/manufacturer_list.html"
     paginate_by = 2
+    def get_queryset(self):
+        queryset = Manufacturer.objects.all()
+        self.form = BaseSearchForm(self.request.GET, placeholder="Search by name")
+        if self.form.is_valid():
+            search_value = self.form.cleaned_data["search"]
+            if search_value:
+                queryset = queryset.filter(name__icontains=search_value)
+        return queryset
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(ManufacturerListView, self).get_context_data(**kwargs)
-        name = self.request.GET.get("name", "")
-        context["search_form"] = ManufacturerNameSearchForm(
-            initial={"name": name}
-        )
+        context["search_form"] = self.form
         return context
-
-    def get_queryset(self):
-        queryset = Manufacturer.objects.all()
-        name = self.request.GET.get("name")
-        if name:
-            return queryset.filter(name__icontains=name)
-        return queryset
 
 
 class ManufacturerCreateView(LoginRequiredMixin, generic.CreateView):
@@ -80,18 +76,19 @@ class CarListView(LoginRequiredMixin, generic.ListView):
     model = Car
     paginate_by = 5
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(CarListView, self).get_context_data(**kwargs)
-        model = self.request.GET.get("model", "")
-        context["search_form"] = CarModelSearchForm(initial={"model": model})
-        return context
-
     def get_queryset(self):
         queryset = Car.objects.select_related("manufacturer")
-        model = self.request.GET.get("model")
-        if model:
-            return queryset.filter(model__icontains=model)
+        self.form = BaseSearchForm(self.request.GET, placeholder="Search by model")
+        if self.form.is_valid():
+            search_value = self.form.cleaned_data["search"]
+            if search_value:
+                queryset = queryset.filter(model__icontains=search_value)
         return queryset
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(CarListView, self).get_context_data(**kwargs)
+        context["search_form"] = self.form
+        return context
 
 
 class CarDetailView(LoginRequiredMixin, generic.DetailView):
@@ -119,20 +116,19 @@ class DriverListView(LoginRequiredMixin, generic.ListView):
     model = Driver
     paginate_by = 5
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(DriverListView, self).get_context_data(**kwargs)
-        username = self.request.GET.get("username", "")
-        context["search_form"] = DriverUsernameSearchForm(
-            initial={"username": username}
-        )
-        return context
-
     def get_queryset(self):
         queryset = Driver.objects.all()
-        username = self.request.GET.get("username")
-        if username:
-            return queryset.filter(username__icontains=username)
+        self.form = BaseSearchForm(self.request.GET, placeholder="Search by name")
+        if self.form.is_valid():
+            search_value = self.form.cleaned_data["search"]
+            if search_value:
+                queryset = queryset.filter(username__icontains=search_value)
         return queryset
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(DriverListView, self).get_context_data(**kwargs)
+        context["search_form"] = self.form
+        return context
 
 
 class DriverDetailView(LoginRequiredMixin, generic.DetailView):
@@ -160,7 +156,7 @@ class DriverDeleteView(LoginRequiredMixin, generic.DeleteView):
 def toggle_assign_to_car(request, pk):
     driver = Driver.objects.get(id=request.user.id)
     if (
-        Car.objects.get(id=pk) in driver.cars.all()
+            Car.objects.get(id=pk) in driver.cars.all()
     ):  # probably could check if car exists
         driver.cars.remove(pk)
     else:
